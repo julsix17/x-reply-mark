@@ -1,0 +1,7 @@
+.xr-avatar-tags { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 5px; max-width: 76px; }
+.xr-avatar-tags .xr-tag { display: block; font: 10px/1.4 sans-serif; padding: 2px 4px; border-radius: 4px; text-align: center; overflow-wrap: anywhere; }
+.xr-avatar-tags .xr-mutual { color: #075c42; background: #c8f5e3; }
+.xr-avatar-tags .xr-waiting { color: #774000; background: #ffebbd; }
+.xr-avatar-tags .xr-unfollowed { color: #4a5260; background: #e7ebef; }
+.xr-avatar-tags .xr-follower { color: #155394; background: #d9ecff; }
+.xr-avatar-tags .xr-returner { color: #893351; background: #ffe0eb; }

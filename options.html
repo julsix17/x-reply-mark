@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>X回复辅助 · 设置</title>
+  <style>
+    :root { color-scheme: light dark; font: 15px/1.7 sans-serif; }
+    body { max-width: 680px; margin: 40px auto; padding: 0 20px; }
+    h1 { font-size: 26px; } fieldset { margin: 24px 0; border: 1px solid #888; border-radius: 8px; }
+    label { display: block; margin: 12px 0; } button { padding: 8px 14px; margin: 6px; cursor: pointer; }
+    input[type="number"] { width: 5em; padding: 4px; } [role="status"] { white-space: pre-wrap; }
+  </style>
+  <script src="options.js" defer></script>
+  <script src="management.js" defer></script>
+</head>
+<body>
+  <h1>X回复辅助</h1>
+  <p>识别常互动的人，了解关注关系。数据仅保存在当前浏览器中。</p>
+  <fieldset><legend>初始化</legend>
+    <p>先打开并登录 X，再点击初始化。会打开不抢焦点的 X 窗口，只读取页面并滚动，最长 10 分钟。</p>
+    <button id="initialize" type="button">一键初始化</button>
+    <button id="resume" type="button">继续上次读取</button>
+    <p id="initStatus" role="status"></p>
+  </fieldset>
+  <fieldset id="settingsFields" disabled><legend>头像下的标签</legend>
+    <label><input id="returnTags" type="checkbox" checked> 爱回踩</label>
+    <label><input id="mutualTags" type="checkbox" checked> 已互关</label>
+    <label><input id="waitingTags" type="checkbox" checked> 未回关天数</label>
+    <label><input id="followTags" type="checkbox" checked> 未关注</label>
+    <label><input id="followerTags" type="checkbox" checked> 关注了你</label>
+    <label>常来评论：近 3 天内评论至少 <input id="returnMinPosts" type="number" min="1" max="50" value="3"> 条不同的帖子</label>
+    <p>互评回来：你评论过对方后，对方来评论你。满足任意一项即显示一个「爱回踩」标签，悬停可查看依据。</p>
+    <p id="settingsStatus" role="status"></p>
+  </fieldset>
+  <fieldset><legend>数据备份</legend>
+    <button id="dataExport" type="button">导出全部数据</button>
+    <label>导入备份（JSON）<input id="dataImport" type="file" accept=".json,application/json"></label>
+    <button id="dataBackups" type="button">查看自动备份</button>
+    <div id="backupList"></div><p id="dataStatus" role="status"></p>
+    <p>每日有数据活动时、升级和导入前自动备份，最多保留 3 份。重要备份请下载到本机。</p>
+  </fieldset>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "X回复辅助",
+  "version": "1.0.0",
+  "description": "帮助识别常互动的人，了解关注关系。",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm/2PMgibIAAzoZ/WPf+VZ8sGR0Yqb8RgK5llpNmkuqC9ltKtmeppHOM+YhnjZRfP3tpDE8i5I/cXY0DFOwrfQgjYGzUPwR2UETkk+RsGtbRbUbk/hKnz55b7y/GWpuB3AumXAgWBZ5YcQkQ01Re7SJUIpLdCB358FZsQw4pArJ/s8g6LORg1eU/+7caLfZxle8GZsrgYKUKNDwPouVacGCAbtOD1ul39u1I4MNhDzo8o1DtHsJkykNxfZTQIB2sgMYsHHuWjcKop9mNREqDAP+KdLYtnQEDUCADB7UPg0ryPH5LLkUs7H89FkYUS6qC3yg64w7rQ6u/qRJxF4b4aQwIDAQAB",
+  "permissions": ["storage", "alarms"],
+  "host_permissions": ["https://x.com/*", "https://twitter.com/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    { "matches": ["https://x.com/*", "https://twitter.com/*"], "js": ["passive.js"], "run_at": "document_start", "world": "MAIN" },
+    { "matches": ["https://x.com/*", "https://twitter.com/*"], "js": ["returns.js", "relationships.js", "marker.js"], "css": ["marker.css"], "run_at": "document_start" }
+  ],
+  "options_page": "options.html",
+  "action": { "default_title": "X回复辅助 · 设置" },
+  "minimum_chrome_version": "111"
+}
