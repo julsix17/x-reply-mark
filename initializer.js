@@ -97,6 +97,7 @@
       };
       if (state.phaseResults.replies !== "complete") {
         state.step = "replies";
+        await save();
         const since = state.startedAt - 3 * 86400000;
         const response = await visit(`/${account}/with_replies`, { since });
         const previousCount = state.posts.length;
@@ -132,9 +133,11 @@
       for (const [step, path, next] of [["notifications", "/notifications", "mentions"], ["mentions", "/notifications/mentions", "following"], ["following", `/${account}/following`, "done"]]) {
         if (state.phaseResults[step] === "complete") continue;
         state.step = step;
+        await save();
         const response = await visit(path, { maxScrolls: step === "following" ? 80 : 8 });
         state.phaseResults[step] = ["end", "reached", "confirmed-empty"].includes(response.reason) ? "complete" : "partial";
-        state.step = next; await save();
+        if (next !== "done") state.step = next;
+        await save();
       }
       const incomplete = stages.find(stage => state.phaseResults[stage] !== "complete");
       if (incomplete) {
@@ -142,7 +145,7 @@
         state.error = `本轮读取已结束，仍有部分数据待续读（详情 ${state.posts.filter(id => state.detailProgress[id]?.complete).length}/${state.posts.length}）`;
         return { ok: true, partial: true };
       }
-      state.status = "done"; state.doneAt = Date.now();
+      state.status = "done"; state.step = "done"; state.doneAt = Date.now();
       return { ok: true, done: true };
     } catch (error) {
       state.status = "stopped";

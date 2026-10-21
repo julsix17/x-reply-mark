@@ -1,6 +1,8 @@
 (() => {
   "use strict";
   const status = document.getElementById("settingsStatus");
+  const initButtons = [document.getElementById("initialize"), document.getElementById("resume")];
+  let initRequestPending = false;
   async function load() {
     const ready = await chrome.runtime.sendMessage({ type: "mark-ready" });
     if (!ready?.ok) throw new Error(ready?.error || "数据未就绪");
@@ -17,19 +19,22 @@
     });
     document.getElementById("settingsFields").disabled = false;
   }
-  async function progress() {
+  async function progress(updateText = true) {
     const { returnInit: state } = await chrome.storage.local.get("returnInit");
-    document.getElementById("initStatus").textContent = state ? `${state.label || ""}${state.error ? `：${state.error}` : ""}` : "尚未初始化";
+    const busy = initRequestPending || (state?.status === "running" && state.deadline > Date.now());
+    initButtons.forEach(button => { button.disabled = busy; });
+    if (updateText) document.getElementById("initStatus").textContent = state ? `${state.label || ""}${state.error ? `：${state.error}` : ""}` : "尚未初始化";
   }
   for (const name of ["initialize", "resume"]) document.getElementById(name).addEventListener("click", async () => {
-    const buttons = [document.getElementById("initialize"), document.getElementById("resume")]; buttons.forEach(b => { b.disabled = true; });
+    initRequestPending = true;
+    initButtons.forEach(button => { button.disabled = true; });
     try {
       document.getElementById("initStatus").textContent = "正在识别登录账号…";
       const result = await chrome.runtime.sendMessage({ type: "mark-init", fresh: name === "initialize" });
       if (!result?.ok) throw new Error(result?.error || "初始化失败");
       await progress();
     } catch (error) { document.getElementById("initStatus").textContent = error.message; }
-    finally { buttons.forEach(b => { b.disabled = false; }); }
+    finally { initRequestPending = false; await progress(false); }
   });
   chrome.storage.onChanged.addListener(changes => { if (changes.returnInit) progress(); });
   load().catch(error => { status.textContent = error.message; });
