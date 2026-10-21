@@ -5,3 +5,29 @@
 .xr-avatar-tags .xr-unfollowed { color: #4a5260; background: #e7ebef; }
 .xr-avatar-tags .xr-follower { color: #155394; background: #d9ecff; }
 .xr-avatar-tags .xr-returner { color: #893351; background: #ffe0eb; }
+
+article[data-testid="tweet"]:has(> .xr-post-boundary) { flex-direction: column; }
+article[data-testid="tweet"] > .xr-post-boundary {
+  box-sizing: border-box;
+  width: 100%;
+  flex: 0 0 auto;
+  margin: 0 0 10px;
+  padding: 6px 10px;
+  border-top: 4px solid #4394aa;
+  border-radius: 3px 3px 0 0;
+  background: rgba(67, 148, 170, 0.12);
+  color: inherit;
+  font: 600 12px/1.5 sans-serif;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+article[data-testid="tweet"] > .xr-post-boundary[data-kind="reply"] {
+  border-top: 1px dashed #b28b4c;
+  background: rgba(178, 139, 76, 0.1);
+  font-weight: 400;
+}
+article[data-testid="tweet"] > .xr-post-boundary[data-kind="unknown"] {
+  border-top: 2px solid rgba(128, 144, 156, 0.65);
+  padding: 0;
+  background: none;
+}

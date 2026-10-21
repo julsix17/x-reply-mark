@@ -20,10 +20,34 @@
     }
     return "";
   }
+  function renderBoundary(article) {
+    if (article.parentElement?.closest(ARTICLE)) return;
+    const ownName = article.querySelector('[data-testid="User-Name"]');
+    const quotes = [...article.querySelectorAll('[role="link"]')].filter(card =>
+      card.querySelector('[data-testid="User-Name"]') && !card.contains(ownName));
+    const time = [...article.querySelectorAll('a[href*="/status/"] time')].find(node =>
+      node.closest(ARTICLE) === article && !quotes.some(card => card.contains(node)));
+    const id = time?.closest("a")?.getAttribute("href")?.match(/\/status\/(\d+)/)?.[1];
+    const tweet = tweets.get(id);
+    // Only captured parent metadata distinguishes a post from a reply, never DOM order.
+    const kind = tweet?.parent ? "reply" : tweet?.parent === "" ? "post" : "unknown";
+    const replyTo = /^[a-z0-9_]{1,30}$/i.test(tweet?.replyTo || "") ? tweet.replyTo : "";
+    const text = kind === "post" ? "帖子" : kind === "reply" ? `评论${replyTo ? ` · 回复 @${replyTo}` : ""}` : "";
+    let boundary = article.querySelector(":scope > .xr-post-boundary");
+    if (!boundary) {
+      boundary = document.createElement("div");
+      boundary.className = "xr-post-boundary";
+      boundary.setAttribute("role", "note");
+      article.prepend(boundary);
+    }
+    if (boundary.dataset.kind !== kind) boundary.dataset.kind = kind;
+    if (boundary.textContent !== text) boundary.textContent = text;
+  }
   function render() {
     scheduled = false;
     detectAccount();
     for (const article of document.querySelectorAll(ARTICLE)) {
+      renderBoundary(article);
       const name = author(article), avatar = article.querySelector('[data-testid="Tweet-User-Avatar"]');
       let box = article.querySelector(".xr-avatar-tags");
       if (box && (!avatar || box.previousElementSibling !== avatar)) { box.remove(); box = null; }
