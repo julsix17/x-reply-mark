@@ -46,24 +46,29 @@
   function render() {
     scheduled = false;
     detectAccount();
-    for (const article of document.querySelectorAll(ARTICLE)) {
-      renderBoundary(article);
-      const name = author(article), avatar = article.querySelector('[data-testid="Tweet-User-Avatar"]');
+    for (const article of document.querySelectorAll(`${ARTICLE}, [data-testid="UserCell"]`)) {
+      const isTweet = article.matches(ARTICLE);
+      if (isTweet) renderBoundary(article);
+      const avatar = article.querySelector(isTweet ? '[data-testid="Tweet-User-Avatar"]' : '[data-testid^="UserAvatar-Container-"]');
+      const avatarLink = avatar?.closest('a[href]') || avatar?.querySelector('a[href]');
+      const name = isTweet ? author(article) : avatarLink?.getAttribute("href")?.match(/^\/([a-z0-9_]+)\/?$/i)?.[1]?.toLowerCase() || "";
+      const anchor = !isTweet && avatarLink?.contains(avatar) ? avatarLink : avatar;
       let box = article.querySelector(".xr-avatar-tags");
-      if (box && (!avatar || box.previousElementSibling !== avatar)) { box.remove(); box = null; }
+      if (box && (!anchor || box.previousElementSibling !== anchor)) { box.remove(); box = null; }
       const labels = name && name !== account && account === settings.account ? self.XRRelationships.labels(settings.relationships?.[name], settings) : [];
       const info = name && name !== account && account === settings.account && settings.returnTags !== false ? self.XRReturns.returnInfo(settings.returnData?.u?.[name], { minPosts: settings.returnMinPosts }) : null;
       if (info) labels.push({ kind: "returner", text: "爱回踩", title: info.title });
-      if (!avatar || !labels.length) { if (box) box.remove(); continue; }
+      if (!anchor || !labels.length) { if (box) box.remove(); continue; }
       const signature = JSON.stringify(labels);
       if (box?.dataset.signature === signature) continue;
-      if (!box) { box = document.createElement("div"); box.className = "xr-avatar-tags"; avatar.after(box); }
+      if (!box) { box = document.createElement("div"); box.className = "xr-avatar-tags"; anchor.after(box); }
       box.dataset.signature = signature;
       box.replaceChildren(...labels.map(label => {
         const span = document.createElement("span");
         span.className = `xr-tag xr-${label.kind}`;
         span.textContent = label.text;
         span.title = label.title || label.text;
+        if (label.kind === "suspicious-follow") { span.tabIndex = 0; span.setAttribute("aria-label", `${label.text}：${label.title}`); }
         return span;
       }));
     }

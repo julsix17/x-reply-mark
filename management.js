@@ -39,7 +39,7 @@
   async function load() {
     await request({ type: "mark-ready" });
     const settings = await chrome.storage.local.get(null);
-    for (const name of ["mutualTags", "waitingTags", "followerTags"]) {
+    for (const name of ["mutualTags", "waitingTags", "followerTags", "suspiciousFollowTags"]) {
       const input = document.getElementById(name);
       if (!input) continue;
       input.checked = settings[name] !== false;

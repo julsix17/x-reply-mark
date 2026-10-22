@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "X回复辅助",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "帮助识别常互动的人，了解关注关系。",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm/2PMgibIAAzoZ/WPf+VZ8sGR0Yqb8RgK5llpNmkuqC9ltKtmeppHOM+YhnjZRfP3tpDE8i5I/cXY0DFOwrfQgjYGzUPwR2UETkk+RsGtbRbUbk/hKnz55b7y/GWpuB3AumXAgWBZ5YcQkQ01Re7SJUIpLdCB358FZsQw4pArJ/s8g6LORg1eU/+7caLfZxle8GZsrgYKUKNDwPouVacGCAbtOD1ul39u1I4MNhDzo8o1DtHsJkykNxfZTQIB2sgMYsHHuWjcKop9mNREqDAP+KdLYtnQEDUCADB7UPg0ryPH5LLkUs7H89FkYUS6qC3yg64w7rQ6u/qRJxF4b4aQwIDAQAB",
   "permissions": ["storage", "alarms"],

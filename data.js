@@ -1,6 +1,6 @@
 (function (root) {
   "use strict";
-  const VERSION = 2;
+  const VERSION = 3;
   const FORMAT = "x-interaction-backup";
   const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
   function migrate(input) {
@@ -17,6 +17,7 @@
       data.returnDays = 3;
       data.dataVersion = 2;
     }
+    if (version < 3) data.dataVersion = 3;
     return data;
   }
   function snapshot(data) {
@@ -51,15 +52,24 @@
     for (const record of Object.values(data.relationships)) {
       if (!object(record)) throw new Error("关注记录格式错误");
       for (const field of ["following", "followed_by"]) if (record[field] !== undefined && typeof record[field] !== "boolean") throw new Error("关注状态格式错误");
-      for (const field of ["observedAt", "followedAt"]) if (record[field] !== undefined && (!Number.isFinite(record[field]) || record[field] < 0)) throw new Error("关注时间格式错误");
+      for (const field of ["observedAt", "followedAt", "relationshipAt"]) if (record[field] !== undefined && (!Number.isFinite(record[field]) || record[field] < 0)) throw new Error("关注时间格式错误");
+      if (record.userId !== undefined && (typeof record.userId !== "string" || !/^\d{1,25}$/.test(record.userId))) throw new Error("用户编号格式错误");
+      if (record.followHistory !== undefined) {
+        const h = record.followHistory, validTime = n => Number.isFinite(n) && n > 0;
+        if (!record.userId || !validTime(record.relationshipAt) || !object(h) || !validTime(h.currentAt) || !Array.isArray(h.losses) || h.losses.length > 20) throw new Error("关注历史格式错误");
+        if (h.mutualAt !== undefined && !validTime(h.mutualAt)) throw new Error("关注历史时间错误");
+        const transition = item => object(item) && validTime(item.mutualAt) && validTime(item.firstSeenAt) && item.firstSeenAt >= item.mutualAt;
+        if (h.pendingLoss !== undefined && !transition(h.pendingLoss)) throw new Error("关注历史时间错误");
+        if (h.losses.some(item => !transition(item) || !validTime(item.confirmedAt) || item.confirmedAt - item.firstSeenAt < 300000 || (item.refollowedAt !== undefined && (!validTime(item.refollowedAt) || item.refollowedAt < item.confirmedAt)))) throw new Error("关注历史时间错误");
+      }
     }
     if (!Number.isInteger(data.returnMinPosts) || data.returnMinPosts < 1 || data.returnMinPosts > 50) throw new Error("阈值需为 1 到 50 的整数");
-    for (const name of ["returnTags", "mutualTags", "waitingTags", "followTags", "followerTags"]) if (data[name] !== undefined && typeof data[name] !== "boolean") throw new Error("设置格式错误");
+    for (const name of ["returnTags", "mutualTags", "waitingTags", "followTags", "followerTags", "suspiciousFollowTags"]) if (data[name] !== undefined && typeof data[name] !== "boolean") throw new Error("设置格式错误");
     if (data.account !== undefined && !/^[a-z0-9_]{1,30}$/.test(data.account)) throw new Error("账号格式错误");
     if (data.returnDays !== 3) throw new Error("互动窗口固定为 3 天");
     if (root.XRValidateExtraData) root.XRValidateExtraData(data);
     if (edition === "public") {
-      const allowed = new Set(["dataVersion", "returnData", "relationships", "account", "returnTags", "mutualTags", "waitingTags", "followTags", "followerTags", "returnMinPosts", "returnDays", "returnInit"]);
+      const allowed = new Set(["dataVersion", "returnData", "relationships", "account", "returnTags", "mutualTags", "waitingTags", "followTags", "followerTags", "suspiciousFollowTags", "returnMinPosts", "returnDays", "returnInit"]);
       if (Object.keys(data).some(name => !allowed.has(name))) throw new Error("备份包含此版本不支持的数据");
     }
     return data;
@@ -84,6 +94,20 @@
           Number.isFinite(record.observedAt) && record.observedAt === existing.observedAt &&
           record.followedAt === undefined && Number.isFinite(existing.followedAt)) {
         merged.relationships[name] = { ...record, followedAt: existing.followedAt };
+      }
+      if (existing?.userId && (!record.userId || record.userId === existing.userId)) {
+        const latest = (existing.relationshipAt || 0) > (record.relationshipAt || 0) ? existing : merged.relationships[name];
+        if (existing.followHistory || record.followHistory) {
+          const history = structuredClone(latest.followHistory || existing.followHistory || record.followHistory);
+          const events = new Map();
+          for (const item of [...(existing.followHistory?.losses || []), ...(record.followHistory?.losses || [])]) {
+            const key = `${item.mutualAt}:${item.firstSeenAt}:${item.confirmedAt}`;
+            const previous = events.get(key);
+            events.set(key, { ...item, ...(previous?.refollowedAt ? { refollowedAt: previous.refollowedAt } : {}) });
+          }
+          history.losses = [...events.values()].sort((a, b) => a.confirmedAt - b.confirmedAt).slice(-20);
+          merged.relationships[name] = { ...latest, userId: latest.userId || existing.userId, followHistory: history };
+        }
       }
     }
     if (root.XRMergeExtraData) root.XRMergeExtraData(merged, current, incoming);

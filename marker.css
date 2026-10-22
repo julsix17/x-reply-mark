@@ -5,6 +5,7 @@
 .xr-avatar-tags .xr-unfollowed { color: #4a5260; background: #e7ebef; }
 .xr-avatar-tags .xr-follower { color: #155394; background: #d9ecff; }
 .xr-avatar-tags .xr-returner { color: #893351; background: #ffe0eb; }
+.xr-avatar-tags .xr-suspicious-follow { color: #8a3515; background: #ffdebc; border: 1px solid #c27c45; cursor: help; }
 
 article[data-testid="tweet"]:has(> .xr-post-boundary) { flex-direction: column; }
 article[data-testid="tweet"] > .xr-post-boundary {
